@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedStock</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>MedStock</h1>
+    <button id="showDashboardButton">Medicines</button>
+    <button id="showSettingsButton">Settings</button>
+  </header>
+
+  <main>
+
+    <section id="dashboardSection">
+      <div class="toolbar">
+        <button id="addMedicineButton" class="big-button">Add medicine</button>
+        <button id="addFromPhotoButton">Add from photo</button>
+        <div>
+          <label for="personFilter">Show medicines for:</label>
+          <select id="personFilter"></select>
+        </div>
+      </div>
+      <p class="note">Alarms ring only while this page is open in a browser tab. If you close the tab, they stop.</p>
+      <p id="dashboardMessage" class="message-text"></p>
+      <div id="cardList"></div>
+      <p id="emptyMessage">No medicines to show. Press "Add medicine" to start.</p>
+    </section>
+
+    <section id="formSection" class="hidden">
+      <h2 id="formTitle">Add medicine</h2>
+      <input type="hidden" id="editId">
+
+      <label for="personInput">Person's name</label>
+      <input type="text" id="personInput" placeholder="For example: Mom">
+
+      <label for="medicineNameInput">Medicine name</label>
+      <input type="text" id="medicineNameInput" placeholder="For example: Metformin">
+
+      <label for="tabletsPerDoseInput">Tablets in one dose (0.5 is allowed)</label>
+      <input type="number" id="tabletsPerDoseInput" min="0" step="0.5">
+
+      <label for="doseTimesInput">Dose times (24-hour HH:MM, separated by commas)</label>
+      <input type="text" id="doseTimesInput" placeholder="08:00, 20:00">
+
+      <label for="stockCountInput">Tablets you have right now</label>
+      <input type="number" id="stockCountInput" min="0" step="0.5">
+
+      <label for="repeatSelect">Repeat this medicine?</label>
+      <select id="repeatSelect">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+
+      <label for="refillWarningInput">Warn me when this many days are left</label>
+      <input type="number" id="refillWarningInput" min="0" step="1">
+
+      <label for="notesInput">Notes (optional)</label>
+      <input type="text" id="notesInput">
+
+      <p id="formError" class="error-text"></p>
+      <button id="saveMedicineButton" class="big-button">Save</button>
+      <button id="cancelFormButton">Cancel</button>
+    </section>
+
+    <section id="stockSection" class="hidden">
+      <h2 id="stockTitle"></h2>
+      <label id="stockLabel" for="stockInput"></label>
+      <input type="number" id="stockInput" min="0" step="0.5">
+      <p id="stockError" class="error-text"></p>
+      <button id="stockSaveButton" class="big-button">Save</button>
+      <button id="stockCancelButton">Cancel</button>
+    </section>
+
+    <section id="scanSection" class="hidden">
+      <h2>Add medicines from a photo</h2>
+      <p class="note">Choose or take a photo of a medicine strip, box or printed prescription. The photo stays on this device. The reading tool and its English language data are downloaded from the internet the first time you use it.</p>
+
+      <label for="photoInput">Photo</label>
+      <input type="file" id="photoInput" accept="image/*">
+      <img id="photoPreview" class="hidden" alt="Preview of the chosen photo">
+
+      <button id="readPhotoButton" class="big-button">Read text from photo</button>
+      <button id="geminiButton" class="hidden">Not right? Try AI (Gemini)</button>
+      <p id="scanStatus" class="message-text"></p>
+
+      <div id="consentBox" class="consent-box hidden">
+        <p>This sends the photo to Google's servers.</p>
+        <button id="consentAgreeButton" class="big-button">I agree, send the photo</button>
+        <button id="consentCancelButton">Cancel</button>
+      </div>
+
+      <p class="error-text">Reading can be wrong, especially handwriting. Always check the name against the prescription.</p>
+      <div id="lineList"></div>
+      <button id="addSelectedButton" class="big-button hidden">Add selected medicines</button>
+      <button id="scanBackButton">Back</button>
+    </section>
+
+    <section id="settingsSection" class="hidden">
+      <h2>Settings</h2>
+
+      <label for="familyNumberInput">Family WhatsApp number (digits with country code, like 919876543210)</label>
+      <input type="text" id="familyNumberInput">
+      <p class="note">The "Send WhatsApp reminder" button opens WhatsApp with a message ready. You must press Send yourself. It is not automatic.</p>
+
+      <label for="geminiKeyInput">Gemini API key (optional, only for reading handwriting)</label>
+      <input type="password" id="geminiKeyInput">
+      <p class="note">Warning: the key stays on this device only, saved in this browser. Anyone who can open this browser on this device could see it. Never share it.</p>
+
+      <button id="saveSettingsButton" class="big-button">Save settings</button>
+      <p id="settingsMessage" class="message-text"></p>
+
+      <h3>Notifications</h3>
+      <button id="notificationButton">Allow notifications</button>
+      <p id="notificationStatus" class="note"></p>
+
+      <h3>Phone alarms (work even when this app is closed)</h3>
+      <button id="downloadIcsButton">Download phone alarm file (.ics)</button>
+      <p id="icsMessage" class="message-text"></p>
+      <p class="note">Open the downloaded file on your phone or import it into a calendar. Some calendars (Google Calendar especially) may ignore the alarm inside the file, so always test it. The steps are in the README.</p>
+
+      <h3>Backup</h3>
+      <button id="downloadBackupButton">Download backup</button>
+      <label for="restoreInput">Restore backup (choose a .json file)</label>
+      <input type="file" id="restoreInput" accept=".json,application/json">
+      <p class="note">Restoring replaces the medicines on this device. The backup does not include the Gemini key or the WhatsApp number.</p>
+      <p id="backupMessage" class="message-text"></p>
+    </section>
+
+  </main>
+
+  <div id="alarmPopup" class="popup-overlay hidden">
+    <div class="popup-box">
+      <h2 id="alarmText"></h2>
+      <p id="alarmPerson"></p>
+      <button id="alarmTakenButton" class="big-button">Taken</button>
+      <button id="alarmSnoozeButton">Remind me in 10 minutes</button>
+    </div>
+  </div>
+
+  <footer>
+    This app tracks stock and reminders only. It does not give medical advice. Follow the doctor's prescription.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/form.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/reminders.js"></script>
+  <script src="js/alarm.js"></script>
+  <script src="js/ics.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/scan.js"></script>
+  <script src="js/gemini.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
